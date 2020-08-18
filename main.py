@@ -48,14 +48,14 @@ def main(args):
                 losses.append(loss.item())
             print("[%d/%d] loss : %.4f | time :%.2fs"%(epoch+1, args.epochs, loss.item(), time.time() - t))
 
-            if (epoch + 1) % args.save_every == 0 :
+            if (epoch + 1) % args.save_every == 0 or epoch == 0:
                 save_checkpoint(realNVP, 'checkpoints/model_' + str(epoch + 1) + '.pt')
 
         print("TRAINING ENDS")
         save_checkpoint(realNVP, 'checkpoints/final.pt')
 
         # Loss Curve Plotting ###################################
-        fig, ax = plt.subplots(figsize=(15,15))
+        fig, ax = plt.subplots(figsize=(15, 15))
         ax.plot(losses, label = 'train loss')
         ax.set(title="Loss Curve")
         ax.set_xlabel('Iteration')
