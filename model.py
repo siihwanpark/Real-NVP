@@ -22,7 +22,7 @@ class AffineCouplingLayer(nn.Module):
         
     def forward(self, x_a, x_b):
         output = self.layers(x_a) # [batch, 2 * (D-d)]
-        log_s, t = F.tanh(output[:, :self.D-self.d]), output[:, self.D-self.d:]
+        log_s, t = output[:, :self.D-self.d], output[:, self.D-self.d:]
 
         z_a = x_a # [batch, d]
         z_b = torch.exp(log_s) * x_b + t # [batch, D-d]
@@ -31,7 +31,7 @@ class AffineCouplingLayer(nn.Module):
 
     def backward(self, z_a, z_b):
         output = self.layers(z_a)
-        log_s, t = F.tanh(output[:, :self.D-self.d]), output[:, self.D-self.d:]
+        log_s, t = output[:, :self.D-self.d], output[:, self.D-self.d:]
 
         x_a = z_a
         x_b = torch.exp(-log_s) * (z_b - t)
@@ -48,7 +48,6 @@ class RealNVP(nn.Module):
 
     def forward(self, x):
         x_a, x_b = x[:, :self.d], x[:, self.d:]
-
         h_a, h_b = x_a, x_b
         log_det_Jacobian = 0
 
@@ -56,7 +55,20 @@ class RealNVP(nn.Module):
             if i % 2 == 0:
                 h_a, h_b, log_s = self.layers[i](h_a, h_b)
             else:
-                h_a, h_b, log_s = self.layers[i](h_b, h_a)
-            log_det_Jacobian += log_s.sum()
+                h_b, h_a, log_s = self.layers[i](h_b, h_a)
+                
+            log_det_Jacobian += log_s.sum(dim = -1).mean()
 
         return torch.cat([h_a, h_b], dim = -1), log_det_Jacobian
+
+    def backward(self, z):
+        z_a, z_b = z[:, :self.d], z[:, self.d:]
+        h_a, h_b = z_a, z_b
+
+        for i in reversed(range(self.k)):
+            if i % 2 == 0:
+                h_a, h_b = self.layers[i].backward(h_a, h_b)
+            else:
+                h_b, h_a = self.layers[i].backward(h_b, h_a)
+
+        return torch.cat([h_a, h_b], dim = -1)
