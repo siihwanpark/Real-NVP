@@ -56,7 +56,7 @@ class RealNVP(nn.Module):
                 h_a, h_b, log_s = self.layers[i](h_a, h_b)
             else:
                 h_b, h_a, log_s = self.layers[i](h_b, h_a)
-                
+
             log_det_Jacobian += log_s.sum(dim = -1).mean()
 
         return torch.cat([h_a, h_b], dim = -1), log_det_Jacobian

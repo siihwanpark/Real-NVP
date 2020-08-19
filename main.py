@@ -55,7 +55,7 @@ def main(args):
         save_checkpoint(realNVP, 'checkpoints/final.pt')
 
         # Loss Curve Plotting ###################################
-        fig, ax = plt.subplots(figsize=(15, 15))
+        fig, ax = plt.subplots()
         ax.plot(losses, label = 'train loss')
         ax.set(title="Loss Curve")
         ax.set_xlabel('Iteration')
@@ -134,7 +134,6 @@ if __name__  == "__main__":
     parser.add_argument('--epochs', type = int, default = 500, help = 'Number of epochs to train.')
     parser.add_argument('--lr', type = float, default = 0.0001, help = 'Initial learning rate.')
     parser.add_argument('--hidden', type = int, default = 256, help = 'Number of hidden units.')
-    parser.add_argument('--dropout', type = float, default = 0.5, help = 'Dropout rate (1 - keep probability).')
     parser.add_argument('--save_every', type = int, default = 100, help = 'Save every n epochs')
 
     args = parser.parse_args()
